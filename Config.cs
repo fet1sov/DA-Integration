@@ -8,13 +8,13 @@
            DO NOT TOUCH ACCESS TOKEN AND WHAT'S BELOW IT
         */
 
-        public static string client_id = "";                                         // You can change it to your own
-        public static string client_secret = "";                                     // You can change it to your own
-        public static string redirect_URL = "";                                      // You can change it to your own
+        public static string client_id = "";                          // You can change it to your own
+        public static string client_secret = "";                      // You can change it to your own
+        public static string redirect_URL = "";                       // You can change it to your own
 
         public static bool bDebug = false;
 
-        public static string authCode = "";                                          // Change it to your auth code
+        public static string authCode = "";
         public static string access_token = "";
         public static string refresh_token = "";
 
