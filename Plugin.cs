@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -22,6 +23,12 @@ namespace DonationIntegration
 
         private static Random random;
 
+        /* Getting directory of config.ini file */
+        public static string DirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "ServerPlugins");
+        public static string FolderPath = Path.Combine(DirectoryPath, "DAIntegration");
+        public static string FilePath = Path.Combine(FolderPath, "config.ini");
+        /* =================================== */
+
         public Plugin(Main game) : base(game)
         {
 
@@ -29,6 +36,11 @@ namespace DonationIntegration
 
         public override void Initialize()
         {
+            /* Gets the ini config with auth code */
+            IniParser parser = new IniParser(@FilePath);
+            Config.authCode = parser.GetSetting("authconfig", "authcode");
+            /* ================================== */
+
             DAPI donateAPI = new DAPI(); // Initilization of the DonationAlerts API
             random = new Random();
         }
