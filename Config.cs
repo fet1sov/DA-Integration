@@ -1,4 +1,4 @@
-﻿namespace DonationIntegration
+﻿namespace StreamIntegration
 {
     class Config
     {
@@ -21,5 +21,7 @@
         public static string channel_id = "";
         public static string socketClient_id = "";
         public static string channelConnection_token = "";
+
+        public static string plugin_tag = "[D-API] ";
     }
 }

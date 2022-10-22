@@ -9,10 +9,17 @@ using System.Collections.Generic;
     DonationAlerts API in C#
     Based on work with Centrifuge server
 
+    ╔═══╗╔═╗╔═╗╔═══╗╔╗─╔╗╔═══╗╔╗─╔╗╔═══╗╔════╗
+    ╚╗╔╗║╚╗╚╝╔╝║╔═╗║║║─║║║╔═╗║║║─║║║╔═╗║║╔╗╔╗║
+    ─║║║║─╚╗╔╝─║║─║║║║─║║║║─╚╝║║─║║║╚══╗╚╝║║╚╝
+    ─║║║║─╔╝╚╗─║╚═╝║║║─║║║║╔═╗║║─║║╚══╗║──║║──
+    ╔╝╚╝║╔╝╔╗╚╗║╔═╗║║╚═╝║║╚╩═║║╚═╝║║╚═╝║──║║──
+    ╚═══╝╚═╝╚═╝╚╝─╚╝╚═══╝╚═══╝╚═══╝╚═══╝──╚╝──
+
     Written by dxAugust (aka fet1sov)
 */
 
-namespace DonationIntegration
+namespace StreamIntegration
 {
     class DAPI
     {
@@ -33,7 +40,7 @@ namespace DonationIntegration
             public Data data { get; set; }
         }
         /* ==================== */
-        
+
         /* Access token request */
         public class AccessResponse
         {
@@ -154,17 +161,17 @@ namespace DonationIntegration
 
             void OnSocketConnect(object sender, EventArgs evt)
             {
-                Console.WriteLine("[D-API] Sucessfully connected to DA server");
+                Debugger.successOutput("Sucessfully connected to DA server");
             }
 
             void OnSocketDisconnect(object sender, CloseEventArgs evt)
             {
-                Console.WriteLine("[D-API] Disconnected from DA server");
+                Debugger.errorOutput("Disconnected from DA server");
             }
 
             void OnErrorSocket(object sender, WebSocketSharp.ErrorEventArgs evt)
             {
-                Console.WriteLine("[D-API] Received Error");
+                Debugger.errorOutput("Received Error");
             }
         }
 
@@ -197,9 +204,11 @@ namespace DonationIntegration
                     accessToken = accessResponse.access_token;
                     Config.refresh_token = accessResponse.refresh_token;
 
-                    Console.WriteLine("[D-API] Successfully got the Access Token");
-                } else {
-                    Console.WriteLine("[D-API] ERROR! AUTH CODE EXPIRED");
+                    Debugger.successOutput("Successfully got the Access Token");
+                }
+                else
+                {
+                    Debugger.errorOutput("ERROR! AUTH CODE EXPIRED");
                 }
             }
 
@@ -230,11 +239,11 @@ namespace DonationIntegration
                     socketToken = userResponse.data.socket_connection_token;
                     Config.channel_id = userResponse.data.id.ToString();
 
-                    Console.WriteLine("[D-API] Successfully got the Socket Token");
+                    Debugger.successOutput("Successfully got the Socket Token");
                 }
                 else
                 {
-                    Console.WriteLine("[D-API] ERROR! AUTH CODE EXPIRED");
+                    Debugger.errorOutput("ERROR! AUTH CODE EXPIRED");
                 }
             }
 
@@ -273,11 +282,11 @@ namespace DonationIntegration
 
                     webSocket.Send($"{{\"params\":{{\"channel\":\"$alerts:donation_{Config.channel_id}\",\"token\":\"{Config.channelConnection_token}\"}},\"method\":1,\"id\":2}}");
 
-                    Console.WriteLine("[D-API] Successfully got the channel connection token");
+                    Debugger.successOutput("Successfully got the channel connection token");
                 }
                 else
                 {
-                    Console.WriteLine("[D-API] ERROR! CAN`T CONNECT TO CHANNEL");
+                    Debugger.errorOutput("ERROR! CAN`T CONNECT TO CHANNEL");
                 }
             }
         }
@@ -286,7 +295,7 @@ namespace DonationIntegration
         {
             if (Config.bDebug)
             {
-                Console.WriteLine("[D-API] Message from socket: " + evt.Data);
+                Debugger.messageOutput("Message from socket: " + evt.Data);
             }
 
             if (evt.Data.StartsWith("{\"id\":1"))
@@ -300,7 +309,7 @@ namespace DonationIntegration
 
             if (subscribitionFlag)
             {
-                Console.WriteLine("[D-API] Successfully got subscribed to the channel");
+                Debugger.successOutput("Successfully got subscribed to the channel");
 
                 webSocket.Send($"{{\"params\":{{\"channel\":\"$alerts:donation_{Config.channel_id}\",\"token\":\"{Config.channelConnection_token}\"}},\"method\":1,\"id\":2}}");
 

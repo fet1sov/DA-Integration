@@ -12,7 +12,7 @@ using TShockAPI;
  * Hope it will make your streams funnier :)
  */
 
-namespace DonationIntegration
+namespace StreamIntegration
 {
     [ApiVersion(2, 1)]
     public class Plugin : TerrariaPlugin
@@ -37,19 +37,29 @@ namespace DonationIntegration
         public override void Initialize()
         {
             /* Gets the ini config with auth code */
-            IniParser parser = new IniParser(@FilePath);
-            Config.authCode = parser.GetSetting("authconfig", "authcode");
-            /* ================================== */
+            if (File.Exists(@FilePath))
+            {
+                IniParser parser = new IniParser(@FilePath);
+                Config.authCode = parser.GetSetting("authconfig", "authcode");
+            } else {
 
-            DAPI donateAPI = new DAPI(); // Initilization of the DonationAlerts API
-            random = new Random();
+            }
+            /* ================================== */
+            
+            if (Config.authCode.Length != 0)
+            {
+                DAPI donateAPI = new DAPI(); // Initilization of the DonationAlerts API
+                random = new Random();
+            } else {
+                Debugger.errorOutput("You have to install authcode in your config file");
+            }
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                
+
             }
             base.Dispose(disposing);
         }
@@ -82,7 +92,7 @@ namespace DonationIntegration
             switch (badThings)
             {
                 case 1:
-                    break; 
+                    break;
 
                 case 2:
                     playerID = random.Next(1, TShock.Players.Length);

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Collections;
 
-namespace DonationIntegration
+namespace StreamIntegration
 {
     public class IniParser
     {
