@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace StreamIntegration
+namespace DonationIntegration
 {
     class Debugger
     {
@@ -25,7 +25,6 @@ namespace StreamIntegration
             Console.BackgroundColor = ConsoleColor.Black;
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(Config.plugin_tag + message);
-
             makeColorsBack();
         }
 

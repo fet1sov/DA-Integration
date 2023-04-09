@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 /*
     DonationAlerts API in C#
-    Based on work with Centrifuge server
+    Based on work with Centrifugo server
 
     ╔═══╗╔═╗╔═╗╔═══╗╔╗─╔╗╔═══╗╔╗─╔╗╔═══╗╔════╗
     ╚╗╔╗║╚╗╚╝╔╝║╔═╗║║║─║║║╔═╗║║║─║║║╔═╗║║╔╗╔╗║
@@ -19,7 +19,7 @@ using System.Collections.Generic;
     Written by dxAugust (aka fet1sov)
 */
 
-namespace StreamIntegration
+namespace DonationIntegration
 {
     class DAPI
     {
@@ -203,6 +203,19 @@ namespace StreamIntegration
 
                     accessToken = accessResponse.access_token;
                     Config.refresh_token = accessResponse.refresh_token;
+
+                    // Делаем запоминание refreshToken'а, для последующего обновления
+                    string configPath = Path.Combine(Directory.GetCurrentDirectory(), "ServerPlugins/DAIntegration/config.ini");
+                    string configDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ServerPlugins/DAIntegration");
+
+                    if (Directory.Exists(@configDirectory))
+                    {
+                        if (File.Exists(@configPath))
+                        {
+                            IniParser parser = new IniParser(@configPath);
+                            parser.AddSetting("DonationAlerts", "refreshtoken", accessResponse.refresh_token);
+                        }
+                    }
 
                     Debugger.successOutput("Successfully got the Access Token");
                 }

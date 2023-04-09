@@ -12,7 +12,7 @@ using TShockAPI;
  * Hope it will make your streams funnier :)
  */
 
-namespace StreamIntegration
+namespace DonationIntegration
 {
     [ApiVersion(2, 1)]
     public class Plugin : TerrariaPlugin
@@ -37,22 +37,31 @@ namespace StreamIntegration
         public override void Initialize()
         {
             /* Gets the ini config with auth code */
-            if (File.Exists(@FilePath))
+            if (Directory.Exists(FolderPath))
             {
-                IniParser parser = new IniParser(@FilePath);
-                Config.authCode = parser.GetSetting("authconfig", "authcode");
-            } else {
+                if (File.Exists(@FilePath))
+                {
+                    IniParser parser = new IniParser(@FilePath);
+                    Config.authCode = parser.GetSetting("DonationAlerts", "authcode");
 
-            }
-            /* ================================== */
-            
-            if (Config.authCode.Length != 0)
-            {
-                DAPI donateAPI = new DAPI(); // Initilization of the DonationAlerts API
-                random = new Random();
+                    Debugger.messageOutput(Config.authCode);
+
+                    DAPI donateAPI = new DAPI(); // Initilization of the DonationAlerts API
+                    random = new Random();
+
+                    parser.AddSetting("DonationAlerts", "refreshtoken", Config.refresh_token);
+                }
             } else {
+                Directory.CreateDirectory(FolderPath);
+
+                string path = @FilePath;
+                string text = "[DonationAlerts]" + Environment.NewLine + "authcode=";
+
+                File.WriteAllText(@FilePath, text);
+
                 Debugger.errorOutput("You have to install authcode in your config file");
             }
+            /* ================================== */
         }
 
         protected override void Dispose(bool disposing)
@@ -84,7 +93,7 @@ namespace StreamIntegration
 
             int badThings = random.Next(1, 10);
 
-            int playerID = 0;
+            int playerID = random.Next(1, TShock.Players.Length);
             int spamCount = 30;
             int zombieCount = 30;
             int batsCount = 50;
@@ -95,8 +104,6 @@ namespace StreamIntegration
                     break;
 
                 case 2:
-                    playerID = random.Next(1, TShock.Players.Length);
-
                     NPC eye = TShock.Utils.GetNPCById(4);
                     TSPlayer.Server.SetTime(false, 0.0);
                     TSPlayer.Server.SpawnNPC(eye.type, name, 1, TShock.Players[playerID].TileX, TShock.Players[playerID].TileY);
@@ -110,8 +117,6 @@ namespace StreamIntegration
                     break;
 
                 case 4:
-                    playerID = random.Next(1, TShock.Players.Length);
-
                     NPC prime = TShock.Utils.GetNPCById(127);
                     TSPlayer.Server.SetTime(false, 0.0);
                     TSPlayer.Server.SpawnNPC(prime.type, name, 1, TShock.Players[playerID].TileX, TShock.Players[playerID].TileY);
@@ -122,7 +127,6 @@ namespace StreamIntegration
                     break;
 
                 case 6:
-                    playerID = random.Next(1, TShock.Players.Length);
                     TShock.Players[playerID].Kick("SORRY FOR DONATION :)", false, true);
                     break;
 
@@ -134,7 +138,6 @@ namespace StreamIntegration
                     break;
 
                 case 8:
-                    playerID = random.Next(1, TShock.Players.Length);
 
                     for (int i = 0; i < zombieCount; i++)
                     {
@@ -149,8 +152,6 @@ namespace StreamIntegration
                     break;
 
                 case 10:
-                    playerID = random.Next(1, TShock.Players.Length);
-
                     for (int i = 0; i < batsCount; i++)
                     {
                         NPC zombies = TShock.Utils.GetNPCById(51);

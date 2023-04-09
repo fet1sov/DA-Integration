@@ -1,4 +1,4 @@
-﻿namespace StreamIntegration
+﻿namespace DonationIntegration
 {
     class Config
     {
@@ -8,6 +8,9 @@
            DO NOT TOUCH ACCESS TOKEN AND WHAT'S BELOW IT
         */
 
+
+
+        // You have to register your app right there -> https://www.donationalerts.com/application/clients
         public static string client_id = "";                          // You can change it to your own
         public static string client_secret = "";                      // You can change it to your own
         public static string redirect_URL = "";                       // You can change it to your own
