@@ -208,12 +208,13 @@ namespace DonationIntegration
                     string configPath = Path.Combine(Directory.GetCurrentDirectory(), "ServerPlugins/DAIntegration/config.ini");
                     string configDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ServerPlugins/DAIntegration");
 
-                    if (Directory.Exists(@configDirectory))
+                    if (Directory.Exists(configDirectory))
                     {
-                        if (File.Exists(@configPath))
+                        if (File.Exists(configPath))
                         {
-                            IniParser parser = new IniParser(@configPath);
-                            parser.AddSetting("DonationAlerts", "refreshtoken", accessResponse.refresh_token);
+                            IniParser parser = new IniParser(configPath);
+                            parser.AddSetting("DonationAlerts", "refreshtoken", Config.refresh_token);
+                            parser.SaveSettings();
                         }
                     }
 
@@ -222,6 +223,43 @@ namespace DonationIntegration
                 else
                 {
                     Debugger.errorOutput("ERROR! AUTH CODE EXPIRED");
+                }
+            }
+
+            return accessToken;
+        }
+
+        private static string refreshAccessToken(string refreshToken)
+        {
+            string accessToken = "";
+
+            var url = "https://www.donationalerts.com/oauth/token";
+
+            var httpRequest = (HttpWebRequest)WebRequest.Create(url);
+            httpRequest.Method = "POST";
+
+            httpRequest.ContentType = "application/x-www-form-urlencoded";
+
+            var data = "grant_type=refresh_token&refresh_token=" + Config.refresh_token + "&client_id=" + Config.client_id + "&client_secret=" + Config.client_secret + "&scope=oauth-donation-subscribe";
+
+            using (var streamWriter = new StreamWriter(httpRequest.GetRequestStream()))
+            {
+                streamWriter.Write(data);
+            }
+
+            var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
+            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            {
+                var result = streamReader.ReadToEnd();
+                if (httpResponse.StatusCode == HttpStatusCode.OK)
+                {
+                    AccessResponse accessResponse = JsonConvert.DeserializeObject<AccessResponse>(result);
+                    accessToken = accessResponse.access_token;
+                    Debugger.successOutput("Successfully got refreshed access token");
+                }
+                else
+                {
+                    Debugger.errorOutput("ERROR! FAILED TO REFRESH ACCESS TOKEN");
                 }
             }
 

@@ -44,12 +44,8 @@ namespace DonationIntegration
                     IniParser parser = new IniParser(@FilePath);
                     Config.authCode = parser.GetSetting("DonationAlerts", "authcode");
 
-                    Debugger.messageOutput(Config.authCode);
-
                     DAPI donateAPI = new DAPI(); // Initilization of the DonationAlerts API
                     random = new Random();
-
-                    parser.AddSetting("DonationAlerts", "refreshtoken", Config.refresh_token);
                 }
             } else {
                 Directory.CreateDirectory(FolderPath);
