@@ -1,0 +1,37 @@
+name: build
+
+on:
+  push:
+    branches: [ "production" ]
+  pull_request:
+    branches: [ "production" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build project
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish project
+        run: dotnet publish --configuration Release --no-build --output ./publish
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: DA_Integration-release
+          path: ./publish/
+          if-no-files-found: error
+          retention-days: 30
