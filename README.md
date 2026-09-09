@@ -8,10 +8,6 @@
 
 #### Простой плагин для сервера на ядре [Tshock](https://github.com/Pryaxis/TShock) который принимает события в реальном времени с сервиса приёма пожертвований [DonationAlerts](https://www.donationalerts.com/). Данный плагин взаимодействует с сервером [Centifugo](https://centrifugal.github.io/centrifugo/) от [DonationAlerts](https://www.donationalerts.com/) в реальном времени.
 
-# 🛠 Используемые библиотеки 
-* websocket-sharp
-* Newtonsoft.Json
-
 # 🌳 Пример работы 
 ![alt-текст](https://i.imgur.com/6yuSXeT.gif "Пример вывода доната в чат")
 
