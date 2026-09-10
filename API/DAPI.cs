@@ -439,7 +439,7 @@ namespace DA_Integration.API
                     var userData = donation?.Result?.Data?.Data;
                     if (userData != null)
                     {
-                        DonateHandler.HandleDonate(userData.Username, userData.Currency, userData.Amount);
+                        DonateHandler.HandleDonate(userData.Username, userData.Currency, userData.Amount, ConfigManager.Config.Events);
                     }
                 }
             }

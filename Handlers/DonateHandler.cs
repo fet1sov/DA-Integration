@@ -1,5 +1,7 @@
 ﻿using Terraria;
+using Terraria.ID;
 using TShockAPI;
+using DA_Integration.Models;
 
 namespace DA_Integration.Handlers
 {
@@ -7,89 +9,121 @@ namespace DA_Integration.Handlers
     {
         private static readonly Random RandomInstance = new Random();
 
-        public static void HandleDonate(string name, string currencyCode, int amount)
+        private static readonly int[] DefaultBosses = { NPCID.EyeofCthulhu, NPCID.EaterofWorldsHead, NPCID.SkeletronHead, NPCID.SkeletronPrime };
+        private static readonly int[] DefaultMobs = { NPCID.Zombie, NPCID.DemonEye, NPCID.CaveBat, NPCID.Skeleton };
+
+        public static void HandleDonate(string name, string currencyCode, int amount, List<DonateEventConfig> events)
         {
-            TShock.Utils.Broadcast($"Донат: от {name} - {amount} {currencyCode}", 255, 255, 0);
+            TShock.Utils.Broadcast($"Донат от {name}: {amount} {currencyCode}", 255, 255, 0);
 
-            int badThings = RandomInstance.Next(1, 11);
-            int playerID = RandomInstance.Next(0, TShock.Players.Length);
+            if (events == null || events.Count == 0) return;
 
-            TSPlayer targetPlayer = TShock.Players[playerID];
-            if (targetPlayer == null || !targetPlayer.Active)
+            var eligibleEvents = events.Where(e => !e.MinAmount.HasValue || amount >= e.MinAmount.Value).ToList();
+            if (eligibleEvents.Count == 0) return;
+
+            DonateEventConfig selectedEvent = SelectRandomEventByWeight(eligibleEvents);
+            if (selectedEvent == null) return;
+
+            var activePlayers = TShock.Players.Where(p => p != null && p.Active).ToList();
+            if (activePlayers.Count == 0) return;
+
+            TSPlayer targetPlayer = activePlayers[RandomInstance.Next(activePlayers.Count)];
+
+            ExecuteEvent(selectedEvent, targetPlayer, name);
+        }
+
+        private static DonateEventConfig SelectRandomEventByWeight(List<DonateEventConfig> events)
+        {
+            double totalWeight = events.Sum(e => e.Probability <= 0 ? 0 : e.Probability);
+            if (totalWeight <= 0) return null;
+
+            double randomValue = RandomInstance.NextDouble() * totalWeight;
+            double currentSum = 0;
+
+            foreach (var ev in events)
             {
-                return;
+                if (ev.Probability <= 0) continue;
+
+                currentSum += ev.Probability;
+                if (randomValue <= currentSum)
+                {
+                    return ev;
+                }
             }
 
-            const int spamCount = 30;
-            const int zombieCount = 30;
-            const int batsCount = 50;
+            return events.FirstOrDefault();
+        }
 
-            switch (badThings)
+        private static void ExecuteEvent(DonateEventConfig config, TSPlayer targetPlayer, string donorName)
+        {
+            switch (config.Type)
             {
-                case 1:
-                    break;
-
-                case 2:
-                    NPC eye = TShock.Utils.GetNPCById(4);
-                    TSPlayer.Server.SetTime(false, 0.0);
-                    TSPlayer.Server.SpawnNPC(eye.type, name, 1, targetPlayer.TileX, targetPlayer.TileY);
-                    break;
-
-                case 3:
-                    foreach (TSPlayer player in TShock.Players)
+                case DonateEventType.SPAWN_BOSS:
                     {
-                        if (player != null && player.Active)
+                        int bossId = config.NpcId ?? DefaultBosses[RandomInstance.Next(DefaultBosses.Length)];
+                        TSPlayer.Server.SetTime(false, 0.0);
+                        TSPlayer.Server.SpawnNPC(bossId, donorName, 1, targetPlayer.TileX, targetPlayer.TileY);
+                        break;
+                    }
+
+                case DonateEventType.SPAWN_MOBS:
+                    {
+                        int mobId = config.NpcId ?? DefaultMobs[RandomInstance.Next(DefaultMobs.Length)];
+                        int count = config.Count ?? RandomInstance.Next(5, 21);
+
+                        for (int i = 0; i < count; i++)
                         {
-                            player.KillPlayer();
+                            TSPlayer.Server.SpawnNPC(mobId, donorName, 1, targetPlayer.TileX, targetPlayer.TileY);
                         }
+                        break;
                     }
-                    break;
 
-                case 4:
-                    NPC prime = TShock.Utils.GetNPCById(127);
-                    TSPlayer.Server.SetTime(false, 0.0);
-                    TSPlayer.Server.SpawnNPC(prime.type, name, 1, targetPlayer.TileX, targetPlayer.TileY);
-                    break;
-
-                case 5:
-                    TSPlayer.Server.SetTime(false, 0.0);
-                    break;
-
-                case 6:
-                    targetPlayer.Kick("SORRY FOR DONATION :)", false, true);
-                    break;
-
-                case 7:
-                    for (int i = 0; i < spamCount; i++)
+                case DonateEventType.KILL_ALL_EVENT:
+                    foreach (TSPlayer player in TShock.Players.Where(p => p != null && p.Active))
                     {
-                        TShock.Utils.Broadcast("MUHHAHAHAHAHA", 255, 0, 0);
+                        player.KillPlayer();
                     }
                     break;
 
-                case 8:
-                    NPC zombie = TShock.Utils.GetNPCById(3);
-                    TSPlayer.Server.SetTime(false, 0.0);
-                    for (int i = 0; i < zombieCount; i++)
+                case DonateEventType.KILL_RANDOM_PLAYER:
+                    targetPlayer.KillPlayer();
+                    break;
+
+                case DonateEventType.SPAWN_BOMB_UNDER_PLAYER:
                     {
-                        TSPlayer.Server.SpawnNPC(zombie.type, name, 1, targetPlayer.TileX, targetPlayer.TileY);
+                        int bombId = config.ProjectileId ?? ProjectileID.Bomb;
+                        int damage = config.Damage ?? RandomInstance.Next(30, 81);
+
+                        Projectile.NewProjectile(null, targetPlayer.X, targetPlayer.Y, 0, 0, bombId, damage, 0, Main.myPlayer);
+                        break;
                     }
-                    break;
 
-                case 9:
-                    TSPlayer.Server.SetTime(false, 12.0);
-                    break;
-
-                case 10:
-                    NPC bat = TShock.Utils.GetNPCById(51);
-                    TSPlayer.Server.SetTime(false, 0.0);
-                    for (int i = 0; i < batsCount; i++)
+                case DonateEventType.SPAWN_DYNAMITE_UNDER_PLAYER:
                     {
-                        TSPlayer.Server.SpawnNPC(bat.type, name, 1, targetPlayer.TileX, targetPlayer.TileY);
-                    }
-                    break;
+                        int dynamiteId = config.ProjectileId ?? ProjectileID.Dynamite;
+                        int damage = config.Damage ?? RandomInstance.Next(100, 251);
 
-                default:
-                    break;
+                        Projectile.NewProjectile(null, targetPlayer.X, targetPlayer.Y, 0, 0, dynamiteId, damage, 0, Main.myPlayer);
+                        break;
+                    }
+
+                case DonateEventType.TELEPORT_PLAYER_IN_RANDOM:
+                    {
+                        int radius = config.TeleportRadius ?? RandomInstance.Next(15, 61);
+
+                        int offsetX = RandomInstance.Next(-radius, radius + 1);
+                        int offsetY = RandomInstance.Next(-radius, radius + 1);
+
+                        targetPlayer.Teleport((targetPlayer.TileX + offsetX) * 16, (targetPlayer.TileY + offsetY) * 16);
+                        break;
+                    }
+
+                case DonateEventType.DAMAGE_BY_STAND_BLOCK:
+                    {
+                        int damage = config.Damage ?? RandomInstance.Next(10, 51);
+                        targetPlayer.DamagePlayer(damage);
+                        break;
+                    }
             }
         }
     }

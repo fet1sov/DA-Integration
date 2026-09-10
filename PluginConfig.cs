@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
+using DA_Integration.Models;
 
 namespace DA_Integration
 {
@@ -24,6 +24,6 @@ namespace DA_Integration
         public bool Debug { get; set; } = false;
 
         [JsonPropertyName("events")]
-        public List<object> Events { get; set; } = new List<object>();
+        public List<DonateEventConfig> Events { get; set; } = new List<DonateEventConfig>();
     }
 }
